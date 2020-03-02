@@ -8,7 +8,8 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.PluginRegistry.Registrar
-
+import java.io.File
+import java.io.FileInputStream
 
 internal val METHOD_POSITION = "player.position"
 internal val METHOD_FINISHED = "player.finished"
