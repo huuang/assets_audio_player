@@ -119,20 +119,30 @@ class AssetsAudioPlayerPlugin(private val context: Context, private val channel:
 
         try {
             val mmr = MediaMetadataRetriever()
+            if (assetAudioPath!!.startsWith("flutter_assets")) {
+                val afd = context.assets.openFd(assetAudioPath)
 
-            val afd = context.assets.openFd("flutter_assets/$assetAudioPath")
-            mediaPlayer?.setDataSource(afd.fileDescriptor, afd.startOffset, afd.declaredLength)
+                mediaPlayer?.setDataSource(afd.fileDescriptor, afd.startOffset, afd.declaredLength)
+                mmr.setDataSource(afd.fileDescriptor, afd.startOffset, afd.declaredLength)
 
-            mmr.setDataSource(afd.fileDescriptor, afd.startOffset, afd.declaredLength)
+                val duration = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()
+                totalDurationSeconds = (duration / 1000)
 
-            //retrieve duration in seconds
-            val duration =
-                    mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()
-            totalDurationSeconds = (duration / 1000)
+                mmr.release()
+                afd.close()
+            } else {
+                val fileInputStream = FileInputStream(File(assetAudioPath))
+                val fileDescriptor = fileInputStream.fd;
 
-            mmr.release()
+                mediaPlayer?.setDataSource(fileDescriptor)
+                mmr.setDataSource(fileDescriptor)
 
-            afd.close()
+                val duration = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()
+                totalDurationSeconds = (duration / 1000)
+
+                mmr.release()
+                fileInputStream.close()
+            }
         } catch (e: Exception) {
             channel.invokeMethod(METHOD_POSITION, 0)
             e.printStackTrace()
